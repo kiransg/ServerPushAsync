@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
@@ -21,8 +20,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@WebServlet(urlPatterns = "/chat", asyncSupported = true)
-public class ChatServlet extends HttpServlet {
+@WebServlet(urlPatterns = "/message", asyncSupported = true)
+public class MessageServlet extends HttpServlet {
 
     private static final long serialVersionUID = -277914015930424042L;
 
@@ -51,6 +50,20 @@ public class ChatServlet extends HttpServlet {
         }
     });
 
+    private final Thread messageGenerator = new Thread(new Runnable() {
+        @Override
+        public void run() {
+            while (true) {
+                try {
+                    messages.put(new Gson().toJson(UUID.randomUUID()));
+                    Thread.sleep(4000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    });
+
     private void sendMessage(PrintWriter writer, String message) {
         // default message format is message-size ; message-data ;
         writer.print(message.length());
@@ -64,6 +77,7 @@ public class ChatServlet extends HttpServlet {
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
         notifier.start();
+        messageGenerator.start();
     }
 
     // GET method is used to establish a stream connection
@@ -134,16 +148,6 @@ public class ChatServlet extends HttpServlet {
             return;
         }
 
-        // send-request
-        Map<String, String> data = new LinkedHashMap<String, String>();
-        data.put("username", request.getParameter("username"));
-        data.put("message", request.getParameter("message"));
-
-        try {
-            messages.put(new Gson().toJson(data));
-        } catch (InterruptedException e) {
-            throw new IOException(e);
-        }
     }
 
     @Override
