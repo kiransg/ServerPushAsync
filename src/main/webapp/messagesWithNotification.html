@@ -1,0 +1,72 @@
+﻿<!DOCTYPE html>
+<html>
+  <head>
+﻿    <title>Messages</title>
+﻿    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+﻿    <script type="text/javascript" src="lib/jquery-1.7.1.js"></script>
+﻿    <script type="text/javascript" src="lib/jquery.stream-1.2.js"></script>
+﻿    <script type="text/javascript">
+﻿    $.stream.setup({enableXDR: true});
+﻿    
+﻿    $(function() {
+    
+﻿    ﻿  $.stream("message", {
+﻿    ﻿    type: "http",
+﻿    ﻿    dataType: "json",
+﻿    ﻿    context: $("#content")[0],
+﻿    ﻿    open: function(event, stream) {
+            // Nothing special to do
+    ﻿    },
+﻿    ﻿    message: function(event) {
+    ﻿    ﻿  $("#editor").text(event.data);
+﻿    ﻿    ﻿  this.scrollTop = this.scrollHeight;
+          if (window.webkitNotifications) {
+            if (window.webkitNotifications.checkPermission() == 0) {
+                createNotification(event.data);
+            } else {
+                window.webkitNotifications.requestPermission();
+            }
+          } 
+        ﻿},
+﻿    ﻿    error: function() {
+            // Nothing special to do
+﻿    ﻿    },
+﻿    ﻿    close: function() {
+            // Nothing special to do
+﻿    ﻿    }
+﻿    ﻿  });
+
+      $("#request_permission").click(function() {
+          if (window.webkitNotifications.checkPermission() != 0) { // 0 is PERMISSION_ALLOWED
+            window.webkitNotifications.requestPermission();
+          }
+        });
+     
+    ﻿  });
+﻿    ﻿  
+     function createNotification(data) {
+        var notification = window.webkitNotifications.createNotification("images/notification.jpeg", "New Notification Received", data);
+        notification.onshow = function () {
+            setTimeout(notification.cancel(), 15000);
+        }
+        notification.show();
+     }
+        ﻿    </script>
+﻿    <style>
+﻿    body {padding: 0; margin: 0; min-width: 320px; font-family: 'Trebuchet MS','Malgun Gothic',Verdana,Helvetica,Arial,sans-serif; font-size: 62.5%; color: #333333}
+﻿    .content {height: 100%; overflow-y: auto; padding: 14px 15px 0 25px;}
+﻿    .content p {margin: 0; padding: 0;}
+﻿    .content .user {font-size: 1.8em; color: #3e3e3e; font-weight: bold; letter-spacing: -1px; margin-top: 0.5em;}
+﻿    .content .message {font-size: 1.3em; color: #444444; line-height: 1.7em; word-wrap: break-word;}
+﻿    .editor {margin: 0 25px 15px 25px;}
+﻿    .editor .user {font-size: 1.5em; display: inline-block; margin: 1em;}
+﻿    .editor input {font-family: 'Trebuchet MS','Malgun Gothic',Verdana,Helvetica,Arial,sans-serif;}
+﻿    .editor .message {width: 100%; height: 28px; line-height: 28px; border: medium none; border-color: #E5E5E5 #DBDBDB #D2D2D2; border-style: solid; border-width: 1px;}
+﻿    </style>
+﻿  </head>
+﻿  <body>
+    <button id="request_permission" href="#">Set notification permissions for this page</button>
+﻿    <div id="editor" class="editor">
+﻿    </div>
+﻿  </body>
+</html>
